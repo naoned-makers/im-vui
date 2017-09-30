@@ -1,0 +1,60 @@
+<resources>
+    <string name="app_name">im voice ui</string>
+
+
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_settings">Settings</string>
+    <!-- Strings related to Settings -->
+    <string name="pref_header_hotword">HotWord</string>
+    <string name="pref_title_sensitivity">Sensitivity</string>
+    <string name="pref_default_sensitivity">0.5</string>
+    <string name="pref_title_audio_gain">AudioGain</string>
+    <string name="pref_default_audio_gain">1.0</string>
+    <string name="pref_title_snowboy_model">Model</string>
+    <string name="pref_default_snowboy_model">david_jarvis.pmdl</string>
+    <string-array name="snowboy_model_entries">
+        <item>david_jarvis.pmdl</item>
+        <item>vince_jarvis.pmdl</item>
+    </string-array>
+
+    <string name="pref_header_reco">Recognition</string>
+    <string name="pref_title_reco_mode">Mode</string>
+    <string name="pref_default_reco_mode">online_android</string>
+    <string-array name="reco_mode_entries">
+        <item>Online android</item>
+        <item>Offline android</item>
+    </string-array>
+    <string-array name="reco_mode_values">
+        <item>online_android</item>
+        <item>offline_android</item>
+    </string-array>
+
+
+    <string name="pref_header_mean">Meaning</string>
+    <string name="pref_title_mean_mode">Mode</string>
+    <string name="pref_default_mean_mode">local</string>
+    <string-array name="mean_mode_entries">
+        <item>api.ai (online)</item>
+        <item>local (offline)</item>
+    </string-array>
+    <string-array name="mean_mode_values">
+        <item>api.ai</item>
+        <item>local</item>
+    </string-array>
+
+
+    <string name="pref_header_synth">Synthesis</string>
+    <string name="pref_title_synth_mode">Engine</string>
+    <string name="pref_default_synth_mode">com.google.tts</string>
+    <string-array name="synth_mode_entries">
+        <item>None</item>
+        <item>Android default</item>
+    </string-array>
+    <string-array name="synth_mode_values">
+        <item></item>
+        <item>com.google.tts</item>
+    </string-array>
+
+
+    <string name="pref_header_admin">Admin</string>
+</resources>

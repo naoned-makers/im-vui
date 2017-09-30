@@ -1,0 +1,8 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <ListPreference
+        android:defaultValue="@string/pref_default_reco_mode"
+        android:entries="@array/reco_mode_entries"
+        android:entryValues="@array/reco_mode_values"
+        android:key="recoMode"
+        android:title="@string/pref_title_reco_mode" />
+</PreferenceScreen>
