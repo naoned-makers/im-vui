@@ -36,7 +36,7 @@ public class SpeechSynthetizer  extends UtteranceProgressListener implements Tex
     @Override
     public void onInit(int status) {
         this.isReady = (status != TextToSpeech.ERROR);
-        Log.d(TAG, "onInit");
+        Log.d(TAG, "onInit "+isReady+" "+!textToSpeech.isSpeaking());
         if(this.isReady) {
             textToSpeech.setLanguage(Locale.getDefault());
             //textToSpeech.setPitch(1.3f);
@@ -49,8 +49,9 @@ public class SpeechSynthetizer  extends UtteranceProgressListener implements Tex
             //Log.e("XgetVoice",""+textToSpeech.getVoice());
             //Log.e("XgetVoices",""+textToSpeech.getVoices());
             //Log.e("XgetAvailableLanguages",""+textToSpeech.getAvailableLanguages());
-            textToSpeech.addEarcon("bonjour", "io.naonedmakers.imvui", R.raw.goodmorn1);
+            //textToSpeech.addEarcon("bonjour", "io.naonedmakers.imvui", R.raw.goodmorn1);
         }else {
+            sendMessage(MsgEnum.MSG_TTS_ERROR,null);
             Log.e("XgetDefaultEngine","FAILED_TO_INITILIZE_TTS_ENGINE");
         }
     }
@@ -87,7 +88,8 @@ public class SpeechSynthetizer  extends UtteranceProgressListener implements Tex
      */
     @Override
     public void onError(String s) {
-
+        Log.d(TAG, "onError "+s);
+        sendMessage(MsgEnum.MSG_TTS_ERROR,null);
     }
 
     public void destroy(){
@@ -102,17 +104,28 @@ public class SpeechSynthetizer  extends UtteranceProgressListener implements Tex
 
 
     public void speak(final String message,boolean isPartial) {
+        Log.d(TAG, "speak "+message+" "+isReady+""+!textToSpeech.isSpeaking());
         if (isReady && !textToSpeech.isSpeaking() && message !=null) {
             String utteranceId = isPartial? "PARTIAL":"FINAL" +message.hashCode();
             textToSpeech.speak(message, TextToSpeech.QUEUE_FLUSH, null, utteranceId);
+        }else{
+            sendMessage(MsgEnum.MSG_TTS_ERROR,null);
         }
     }
-    public void playEarcon(final String message) {
-        if (isReady && !textToSpeech.isSpeaking() && message !=null) {
-            String utteranceId = message.hashCode() + "";
+    public void playEarcon(final String earcon) {
+        Log.d(TAG, "speak "+earcon+"  "+isReady+""+!textToSpeech.isSpeaking());
+        if (isReady && !textToSpeech.isSpeaking() && earcon !=null) {
+            String utteranceId = earcon.hashCode() + "";
             Bundle params = null;
             //params.putString(TextToSpeech.Engine.KEY_PARAM_STREAM,String.valueOf(AudioManager.STREAM_ALARM));
-            textToSpeech.playEarcon(message, TextToSpeech.QUEUE_FLUSH, params, utteranceId);
+            textToSpeech.playEarcon(earcon, TextToSpeech.QUEUE_FLUSH, params, utteranceId);
+        }
+    }
+
+    public void playSilence(long milis) {
+        Log.d(TAG, "playSilence "+isReady+""+!textToSpeech.isSpeaking());
+        if (isReady && !textToSpeech.isSpeaking()) {
+            textToSpeech.playSilentUtterance(milis, TextToSpeech.QUEUE_FLUSH,"silent");
         }
     }
 

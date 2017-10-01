@@ -1,5 +1,12 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
+
+    <CheckBoxPreference
+        android:key="hotWordActivated"
+        android:title="@string/pref_title_hotword_on"
+        android:defaultValue="false"
+        />
+
     <!-- NOTE: EditTextPreference accepts EditText attributes. -->
     <EditTextPreference
         android:defaultValue="@string/pref_default_sensitivity"
@@ -28,6 +35,7 @@
         android:entryValues="@array/snowboy_model_entries"
         android:key="hotWordModel"
         android:title="@string/pref_title_snowboy_model" />
+
     <!--
     This preference simply launches an intent when selected. Use this UI sparingly, per
              design guidelines.

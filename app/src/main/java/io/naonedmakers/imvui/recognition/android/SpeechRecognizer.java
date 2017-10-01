@@ -10,6 +10,8 @@ import android.speech.RecognizerIntent;
 import android.util.Log;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Locale;
 
 import io.naonedmakers.imvui.MsgEnum;
@@ -103,7 +105,8 @@ public class SpeechRecognizer {
             ArrayList data = results.getStringArrayList(android.speech.SpeechRecognizer.RESULTS_RECOGNITION);
             Log.d(TAG, "onResults RECOGNITION" + data);
             //Log.d(TAG, "onResults EXTRA" + results.getStringArrayList(RecognizerIntent.EXTRA_RESULTS));
-            Log.d(TAG, "onResults CONFIDENCE_SCORES" + results.getStringArrayList(android.speech.SpeechRecognizer.CONFIDENCE_SCORES));
+
+            Log.d(TAG, "onResults CONFIDENCE_SCORES" + Arrays.asList(results.getFloatArray(android.speech.SpeechRecognizer.CONFIDENCE_SCORES)));
 
 
             if(data.size()>0){

@@ -16,10 +16,11 @@
         <item>david_jarvis.pmdl</item>
         <item>vince_jarvis.pmdl</item>
     </string-array>
+    <string name="pref_title_hotword_on">Activated</string>
 
     <string name="pref_header_reco">Recognition</string>
     <string name="pref_title_reco_mode">Mode</string>
-    <string name="pref_default_reco_mode">online_android</string>
+    <string name="pref_default_reco_mode">offline_android</string>
     <string-array name="reco_mode_entries">
         <item>Online android</item>
         <item>Offline android</item>
@@ -57,4 +58,6 @@
 
 
     <string name="pref_header_admin">Admin</string>
+    <string name="pref_file">pref_file</string>
+    <string name="broker_ip">broker_ip</string>
 </resources>

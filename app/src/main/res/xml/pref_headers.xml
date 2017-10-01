@@ -12,11 +12,11 @@
         android:title="@string/pref_header_reco" />
     <header
         android:fragment="io.naonedmakers.imvui.SettingsActivity$MeanPreferenceFragment"
-        android:icon="@android:drawable/ic_btn_speak_now"
+        android:icon="@android:drawable/ic_menu_help"
         android:title="@string/pref_header_mean" />
     <header
         android:fragment="io.naonedmakers.imvui.SettingsActivity$SynthesisPreferenceFragment"
-        android:icon="@android:drawable/ic_btn_speak_now"
+        android:icon="@android:drawable/ic_lock_silent_mode_off"
         android:title="@string/pref_header_synth" />
 
     <header

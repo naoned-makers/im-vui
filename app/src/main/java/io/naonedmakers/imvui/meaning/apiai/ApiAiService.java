@@ -23,7 +23,7 @@ public class ApiAiService extends AIDataService implements MeanService {
     public MeanResponse request(String queryText) throws AIServiceException {
         final AIRequest aiRequest = new AIRequest();
         aiRequest.setQuery(queryText);
-        AIResponse aiResponse= request(aiRequest);
+        AIResponse aiResponse= super.request(aiRequest);
         MeanResponse meanResponse = new MeanResponse();
 
         meanResponse.source= aiResponse.getResult().getSource();
@@ -34,6 +34,12 @@ public class ApiAiService extends AIDataService implements MeanService {
 
         return meanResponse;
     }
+
+    public void publish(String topic, String payLoadStr){
+        //do nothing as it ia already handle by firebase
+    }
+
+    public void onDestroy(){}
 
     /**
      * Create new service with unique context for given configuration

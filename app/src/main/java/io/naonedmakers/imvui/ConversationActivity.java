@@ -1,5 +1,6 @@
 package io.naonedmakers.imvui;
 
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -9,23 +10,21 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import ai.api.AIConfiguration;
-import ai.api.AIDataService;
 import ai.api.AIServiceException;
-import ai.api.model.AIRequest;
-import ai.api.model.AIResponse;
-import ai.api.model.Metadata;
-import ai.api.model.Result;
-import ai.api.model.Status;
 import ai.api.util.StringUtils;
 import io.naonedmakers.imvui.meaning.MeanResponse;
 import io.naonedmakers.imvui.meaning.MeanService;
 import io.naonedmakers.imvui.meaning.apiai.ApiAiService;
+import io.naonedmakers.imvui.meaning.local.LocalAiService;
 import io.naonedmakers.imvui.synthesis.android.SpeechSynthetizer;
 
 /**
@@ -51,6 +50,7 @@ public class ConversationActivity extends HotWordActivity {
 
     @Override
     protected void onResume() {
+        Log.i(TAG, "onResume ");
         super.onResume();
         try {
             SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
@@ -68,7 +68,9 @@ public class ConversationActivity extends HotWordActivity {
             final AIConfiguration config = new AIConfiguration(BuildConfig.APIAI_ACESS_TOKEN);
             meanService = (MeanService) new ApiAiService(config);
         } else {
-            meanService = null;
+            SharedPreferences sharedPref = this.getSharedPreferences(getString(R.string.pref_file), Context.MODE_PRIVATE);
+            String lastBrokerIp = sharedPref.getString(getString(R.string.broker_ip),null);
+            meanService = new LocalAiService(lastBrokerIp);
         }
     }
 
@@ -77,8 +79,15 @@ public class ConversationActivity extends HotWordActivity {
      */
     @Override
     protected void onPause() {
-        speechSynthetizer.destroy();
-        speechSynthetizer = null;
+        Log.i(TAG, "onPause ");
+        if(speechSynthetizer!=null) {
+            speechSynthetizer.destroy();
+            speechSynthetizer = null;
+        }
+        if(meanService!=null) {
+            meanService.onDestroy();
+            meanService=null;
+        }
         super.onPause();
     }
 
@@ -95,6 +104,10 @@ public class ConversationActivity extends HotWordActivity {
                     onPartialResponseDone();
                     break;
                 case MSG_TTS_FINAL_DONE:
+                    //If the speech uterance is complete, go back to waiting the hot word
+                    onFinalResponseDone();
+                    break;
+                case MSG_TTS_ERROR:
                     //If the speech uterance is complete, go back to waiting the hot word
                     onFinalResponseDone();
                     break;
@@ -145,50 +158,58 @@ public class ConversationActivity extends HotWordActivity {
     }
 
 
-    void onMeaningResult(MeanResponse aiResponse) {
-        if (aiResponse != null) {
-            Log.i(TAG, "Status code: " + aiResponse.statusCode);
-//            Log.i(TAG, "Status type: " + status.getErrorType());
+    void onMeaningResult(MeanResponse meanResponse) {
+        if (meanResponse != null && meanResponse.statusCode==0) {
 
-            //          final Result result = aiResponse.getResult();
-            //        if (result != null) {
-            Log.i(TAG, "Resolved query: " + aiResponse.resolvedQuery);
-            Log.i(TAG, "Action: " + aiResponse.action);
-            //Get speech
-            final String speech = aiResponse.speech;
-            Log.i(TAG, "Speech: " + speech);
-            //Get metadata
-
-//                    Log.i(TAG, "Intent id: " + aiResponse.getIntentId());
-            Log.i(TAG, "Intent name: " + aiResponse.intentName);
-
-            //Get parameters
-            final HashMap<String, JsonElement> params = aiResponse.parameters;
-            if (params != null && !params.isEmpty()) {
-                Log.i(TAG, "Parameters: ");
-                for (final Map.Entry<String, JsonElement> entry : params.entrySet()) {
-                    Log.i(TAG, String.format("%s: %s", entry.getKey(), entry.getValue().toString()));
-                }
+            if(meanResponse.action!=null){
+                meanService.publish("im/command/"+ meanResponse.action,buildCommandPayload(meanResponse));
             }
-
-            //Show the ai ai response
-            updateLog(speech, "#FF69B4");
-
-
-            if (speechSynthetizer != null) {
-                speechSynthetizer.speak(speech, aiResponse.actionIncomplete);
-            } else if (aiResponse.actionIncomplete) {
+            if(meanResponse.speech!=null){
+                //Show the ai ai response
+                updateLog(meanResponse.speech, "#FF69B4");
+            }
+            if (speechSynthetizer != null && meanResponse.speech!=null) {
+                speechSynthetizer.speak(meanResponse.speech, meanResponse.actionIncomplete);
+            } else if (meanResponse.actionIncomplete) {
                 onPartialResponseDone();
             } else {
                 onFinalResponseDone();
             }
 
         } else {
-            Log.i(TAG, "Api.ai no result: " + aiResponse);
+            Log.i(TAG, "ai no result: " + meanResponse);
         }
 
     }
 
-    ;
+    /**
+     *  serialize command payload based on ai repsonse
+     * @param meanResponse
+     * @return
+     */
+    private String buildCommandPayload(MeanResponse meanResponse) {
+        Log.i(TAG, "Status code: " + meanResponse.statusCode);
+        JsonObject payload = new JsonObject();
+        payload.addProperty("origin",meanResponse.source);
+        payload.addProperty("intent",meanResponse.intentName);
+        payload.addProperty("request",meanResponse.resolvedQuery);
+        payload.addProperty("response",meanResponse.speech);
+        JsonObject parameter = new JsonObject();
+        if (meanResponse.parameters != null && !meanResponse.parameters.isEmpty()) {
+            for (final Map.Entry<String, JsonElement> entry : meanResponse.parameters.entrySet()) {
+                parameter.addProperty( entry.getKey(),entry.getValue().toString());
+            }
+        }
+        payload.add("parameter",parameter);
+
+        JsonArray messages = new JsonArray();
+        //messages.put("messages");
+        payload.add("messages",messages);
+
+        final GsonBuilder gsonBuilder = new GsonBuilder();
+        final Gson gson = gsonBuilder.create();
+        return gson.toJson(payload);
+    }
+
 
 }

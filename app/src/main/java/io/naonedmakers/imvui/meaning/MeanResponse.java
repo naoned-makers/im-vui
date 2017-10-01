@@ -52,6 +52,19 @@ public class MeanResponse {
     //private Map<String, JsonElement> data;
 
 
-
-
+    @Override
+    public String toString() {
+        return "MeanResponse{" +
+                "statusCode=" + statusCode +
+                ", action='" + action + '\'' +
+                ", source='" + source + '\'' +
+                ", parameters=" + parameters +
+                ", resolvedQuery='" + resolvedQuery + '\'' +
+                ", actionIncomplete=" + actionIncomplete +
+                ", intentName='" + intentName + '\'' +
+                ", speech='" + speech + '\'' +
+                ", messages=" + messages +
+                ", displayText='" + displayText + '\'' +
+                '}';
+    }
 }

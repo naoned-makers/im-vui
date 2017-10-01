@@ -13,7 +13,8 @@ public enum  MsgEnum {
     MSG_STT_LEVEL,
     MSG_TTS_START,
     MSG_TTS_PARTIAL_DONE,
-    MSG_TTS_FINAL_DONE;
+    MSG_TTS_FINAL_DONE,
+    MSG_TTS_ERROR;
 
     public static MsgEnum getMsgEnum(int i) {
         return MsgEnum.values()[i];

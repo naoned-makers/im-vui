@@ -1,8 +1,11 @@
 package io.naonedmakers.imvui;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
@@ -13,6 +16,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
 import android.text.Spanned;
+import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -20,7 +24,22 @@ import android.widget.ProgressBar;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import java.net.ConnectException;
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.InterfaceAddress;
+import java.net.NetworkInterface;
+import java.net.Socket;
+import java.util.Collections;
+import java.util.List;
+
+import ai.api.AIServiceException;
+import ai.api.util.StringUtils;
+import io.naonedmakers.imvui.meaning.MeanResponse;
+
 public class UiBaseActivity extends AppCompatActivity {
+    private static final String TAG = UiBaseActivity.class.getSimpleName();
 
     static String strLog = null;
     private TextView log;
@@ -144,4 +163,105 @@ public class UiBaseActivity extends AppCompatActivity {
         }
     }
 
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        findLanMqttBrokerIp();
+        strLog="";
+    }
+
+    /**
+     * Find in the local network an host that has mqtt port open
+     * @return
+     */
+    public void findLanMqttBrokerIp() {
+
+        SharedPreferences sharedPref = this.getSharedPreferences(getString(R.string.pref_file),Context.MODE_PRIVATE);
+        String lastBrokerIp = sharedPref.getString(getString(R.string.broker_ip),null);
+
+        new AsyncTask<String, Void, String>() {
+            @Override
+            protected String doInBackground(String ... params) {
+                String brokerIp=params[0];
+                try {
+                    if(brokerIp!=null && !StringUtils.isEmpty(brokerIp)) {
+                        //test the last Ip first
+                        if(isPortOpen(brokerIp,1883,100)){
+                            return brokerIp;
+                        }
+                    }
+                    List<NetworkInterface> all = Collections.list(NetworkInterface.getNetworkInterfaces());
+                    for (NetworkInterface nif : all) {
+                        if (!nif.getName().equalsIgnoreCase("wlan0")) continue;
+                        if (!nif.isUp()) continue;
+                        for (InterfaceAddress intAddress : nif.getInterfaceAddresses()) {
+                            if (intAddress.getAddress() instanceof Inet4Address) {
+                                //found the wifi ipv4 adress
+                                Log.i(TAG, "wifi ipv4 address: " +intAddress);
+                                Log.i(TAG, "wifi ipv4 getBroadcast: " +intAddress.getBroadcast());
+                                Log.i(TAG, "wifi ipv4 getNetworkPrefixLength: " +intAddress.getNetworkPrefixLength());
+                                if(intAddress.getNetworkPrefixLength()<=24){
+                                    //not test more than 256 ip
+                                    byte[] currentIp = intAddress.getBroadcast().getAddress();
+                                    Log.i(TAG, "wifi ipv4 bytes: " +currentIp.length);
+                                    for(int i=1;i<256;i++){
+                                        currentIp[3]=((Integer)i).byteValue();
+                                        InetAddress addr = InetAddress.getByAddress(currentIp);
+                                        if(addr.isReachable(40)){
+                                            Log.i(TAG, "address isReachable: " +addr.getHostAddress());
+                                            if(isPortOpen(addr.getHostAddress(),1883,100)){
+                                                return addr.getHostAddress();
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+
+                    }
+                } catch (Exception ex) {
+                    //handle exception
+                }
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(String brokerIp) {
+                storeBrokerIp(brokerIp);
+            }
+        }.execute(lastBrokerIp);
+    }
+
+    public void storeBrokerIp(String brokerIp){
+        if(brokerIp!=null && !StringUtils.isEmpty(brokerIp)) {
+            Log.i(TAG, "new Broker Ip: " +brokerIp);
+            SharedPreferences sharedPref = this.getSharedPreferences(getString(R.string.pref_file),Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedPref.edit();
+            editor.putString(getString(R.string.broker_ip), brokerIp);
+            editor.commit();
+        }else{
+            Log.i(TAG, "no Broker Found");
+        }
+    }
+    public static boolean isPortOpen(final String ip, final int port, final int timeout) {
+
+        try {
+            Socket socket = new Socket();
+            socket.connect(new InetSocketAddress(ip, port), timeout);
+            socket.close();
+            return true;
+        }
+
+        catch(ConnectException ce){
+            //Log.i(TAG, "isPortOpen"+ce.getMessage());
+            return false;
+        }
+
+        catch (Exception ex) {
+            Log.i(TAG, "isPortOpen"+ex.getMessage());
+            return false;
+        }
+    }
 }

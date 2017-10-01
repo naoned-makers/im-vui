@@ -32,6 +32,7 @@ public class HotWordActivity extends UiBaseActivity {
     private String sensitivity;
     private float audioGain;
     private String activeModel;
+    private  boolean hotWordActivated=false;
     private String recoMode;
 
     @Override
@@ -49,7 +50,6 @@ public class HotWordActivity extends UiBaseActivity {
         audioGain = Float.parseFloat(getString(R.string.pref_default_audio_gain));
         activeModel = getString(R.string.pref_default_snowboy_model);
         recoMode = getString(R.string.pref_default_reco_mode);
-
         AppResCopy.copyResFromAssetsToSD(this);
         /**
          player = new MediaPlayer();
@@ -63,10 +63,13 @@ public class HotWordActivity extends UiBaseActivity {
 
 
     protected void startHotWordDetection() {
-        Log.v(TAG, "startHotWordDetection");
-        hotWordThread.startDetecting();
-        updateLog(" ----> Waiting HotWord", "blue");
-        Snackbar.make(fab, "Waiting HotWord", Snackbar.LENGTH_SHORT);
+        Log.v(TAG, "startHotWordDetection "+hotWordActivated);
+        if(hotWordActivated){
+            hotWordThread.startDetecting();
+            updateLog(" ----> Waiting HotWord", "blue");
+        }else{
+            updateLog(" ----> Waiting touch", "blue");
+        }
         fab.setImageDrawable(ContextCompat.getDrawable(this, android.R.drawable.ic_btn_speak_now));
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -148,6 +151,7 @@ public class HotWordActivity extends UiBaseActivity {
             sensitivity = sharedPref.getString(SettingsActivity.HotWordPreferenceFragment.HOT_WORD_SENSITIVITY, sensitivity);
             audioGain = Float.parseFloat(sharedPref.getString(SettingsActivity.HotWordPreferenceFragment.HOT_WORD_AUDIO_GAIN, "" + audioGain));
             activeModel = sharedPref.getString(SettingsActivity.HotWordPreferenceFragment.HOT_WORD_MODEL, activeModel);
+            hotWordActivated = sharedPref.getBoolean(SettingsActivity.HotWordPreferenceFragment.HOT_WORD_ACTIVATED, false);
             recoMode = sharedPref.getString(SettingsActivity.RecognitionPreferenceFragment.RECO_MODE, recoMode);
         } catch (Exception e) {
             Toast.makeText(this, "SharedPreferences Exception" + e.getMessage(), Toast.LENGTH_LONG).show();
@@ -187,7 +191,6 @@ public class HotWordActivity extends UiBaseActivity {
                     break;
                 case MSG_STT_ERROR:
                     onListeningError((String) msg.obj);
-                    switchToHotWordDetection();
                     break;
                 case MSG_STT_LEVEL:
                     //updateLog(" ----> " + message, "black");
@@ -205,7 +208,6 @@ public class HotWordActivity extends UiBaseActivity {
      */
     public void onListeningFinished(String queryText) {
         updateLog(queryText, "black");
-        switchToHotWordDetection();
     }
     /**
      * Event fires when recognition engine error

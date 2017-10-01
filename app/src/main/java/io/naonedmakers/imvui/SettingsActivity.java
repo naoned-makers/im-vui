@@ -4,6 +4,7 @@ package io.naonedmakers.imvui;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
@@ -98,9 +99,17 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
     public void onHeaderClick(Header header, int position) {
         super.onHeaderClick(header, position);
         if (header.id == R.id.launch_admin) {
-            Toast.makeText(this,"Opening Web admin",Toast.LENGTH_LONG).show();
-            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.google.com"));
-            startActivity(browserIntent);
+            SharedPreferences sharedPref = this.getSharedPreferences(getString(R.string.pref_file),Context.MODE_PRIVATE);
+            String lastBrokerIp = sharedPref.getString(getString(R.string.broker_ip),null);
+
+            if(lastBrokerIp!=null){
+                Toast.makeText(this,"Opening Web admin",Toast.LENGTH_LONG).show();
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://"+lastBrokerIp+":8080/admin"));
+                startActivity(browserIntent);
+            }else{
+                Toast.makeText(this,"No Server yet found",Toast.LENGTH_LONG).show();
+            }
+
         }
     }
 
@@ -173,6 +182,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         public static final String HOT_WORD_SENSITIVITY = "hotWordSensitivity";
         public static final String HOT_WORD_AUDIO_GAIN = "hotWordAudioGain";
         public static final String HOT_WORD_MODEL = "hotWordModel";
+        public static final String HOT_WORD_ACTIVATED = "hotWordActivated";
 
         @Override
         public void onCreate(Bundle savedInstanceState) {
