@@ -41,7 +41,7 @@ public class SpeechRecognizer {
         intent.putExtra(RecognizerIntent.EXTRA_PREFER_OFFLINE,preferOffline);
         //intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Parle TODO REMOVE");
         intent.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, false);
-        intent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1);
+        intent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 0);
         intent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, appContext.getPackageName());
 
         // secret parameters that when added provide audio url in the result
@@ -110,7 +110,7 @@ public class SpeechRecognizer {
 
 
             if(data.size()>0){
-                //We talke best scode match
+                //We take best score match
                 sendMessage(MsgEnum.MSG_STT_TEXT, data.get(0).toString());
             }else{
                 sendMessage(MsgEnum.MSG_STT_ERROR, ErrorTranslator.getErrorText(android.speech.SpeechRecognizer.ERROR_NO_MATCH));

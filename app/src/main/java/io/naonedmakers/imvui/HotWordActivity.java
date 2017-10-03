@@ -1,8 +1,6 @@
 package io.naonedmakers.imvui;
 
-import android.content.Intent;
 import android.content.SharedPreferences;
-import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -12,8 +10,6 @@ import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
-
-import java.io.IOException;
 
 import io.naonedmakers.imvui.hotword.snowboy.AppResCopy;
 import io.naonedmakers.imvui.hotword.snowboy.HotWordThread;
@@ -68,7 +64,7 @@ public class HotWordActivity extends UiBaseActivity {
             hotWordThread.startDetecting();
             updateLog(" ----> Waiting HotWord", "blue");
         }else{
-            updateLog(" ----> Waiting touch", "blue");
+            updateLog(" ----> Waiting icon touch", "blue");
         }
         fab.setImageDrawable(ContextCompat.getDrawable(this, android.R.drawable.ic_btn_speak_now));
         fab.setOnClickListener(new View.OnClickListener() {
@@ -94,6 +90,13 @@ public class HotWordActivity extends UiBaseActivity {
 
         speechRecognizer = new SpeechRecognizer(handle, recoMode.equals("offline_android"));//preferOffline true or false
         speechRecognizer.startRecognizing(this);
+        onListenningStart();
+
+    }
+    /**
+     * Dispatch onListenningStart() to fragments.
+     */
+    protected void onListenningStart() {
 
         Snackbar.make(fab, "Listenning to speech", Snackbar.LENGTH_SHORT);
         fab.setImageDrawable(ContextCompat.getDrawable(this, android.R.drawable.ic_menu_close_clear_cancel));

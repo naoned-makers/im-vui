@@ -35,12 +35,6 @@ public class ApiAiService extends AIDataService implements MeanService {
         return meanResponse;
     }
 
-    public void publish(String topic, String payLoadStr){
-        //do nothing as it ia already handle by firebase
-    }
-
-    public void onDestroy(){}
-
     /**
      * Create new service with unique context for given configuration
      *

@@ -42,7 +42,7 @@
         <item>api.ai</item>
         <item>local</item>
     </string-array>
-
+    <string name="pref_title_intent_broker">Broker Ip</string>
 
     <string name="pref_header_synth">Synthesis</string>
     <string name="pref_title_synth_mode">Engine</string>
@@ -57,7 +57,7 @@
     </string-array>
 
 
-    <string name="pref_header_admin">Admin</string>
-    <string name="pref_file">pref_file</string>
-    <string name="broker_ip">broker_ip</string>
+    <string name="action_admin">Admin</string>
+    <string name="action_mqtt">Mqtt</string>
+    <string name="action_headset">Headset</string>
 </resources>

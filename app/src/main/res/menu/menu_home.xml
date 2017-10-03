@@ -3,8 +3,28 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="io.naonedmakers.imvui.ConversationActivity">
     <item
+        android:id="@+id/action_mqtt"
+        android:orderInCategory="10"
+        android:title="@string/action_mqtt"
+        android:icon="@drawable/ic_action_mqtt"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/action_headset"
+        android:orderInCategory="20"
+        android:title="@string/action_headset"
+        android:icon="@drawable/ic_action_headset"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/action_admin"
+        android:orderInCategory="50"
+        android:title="@string/action_admin"
+        android:icon="@android:drawable/ic_menu_set_as"
+        app:showAsAction="always" />
+    <item
         android:id="@+id/action_settings"
         android:orderInCategory="100"
         android:title="@string/action_settings"
-        app:showAsAction="never" />
+        android:icon="@android:drawable/ic_menu_preferences"
+        app:showAsAction="always"  />
+
 </menu>

@@ -10,7 +10,6 @@ import ai.api.model.AIResponse;
  */
 
 public interface MeanService {
-
     /**
      * Make request to the AI service.
      *
@@ -18,8 +17,4 @@ public interface MeanService {
      * @return response object from service. Never <code>null</code>
      */
     public MeanResponse request(final String request) throws AIServiceException ;
-
-
-    public void publish(String topic, String payLoadStr);
-    public void onDestroy();
 }

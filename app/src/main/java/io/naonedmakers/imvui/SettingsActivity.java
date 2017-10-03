@@ -95,23 +95,6 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                         .getString(preference.getKey(), ""));
     }
 
-    @Override
-    public void onHeaderClick(Header header, int position) {
-        super.onHeaderClick(header, position);
-        if (header.id == R.id.launch_admin) {
-            SharedPreferences sharedPref = this.getSharedPreferences(getString(R.string.pref_file),Context.MODE_PRIVATE);
-            String lastBrokerIp = sharedPref.getString(getString(R.string.broker_ip),null);
-
-            if(lastBrokerIp!=null){
-                Toast.makeText(this,"Opening Web admin",Toast.LENGTH_LONG).show();
-                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://"+lastBrokerIp+":8080/admin"));
-                startActivity(browserIntent);
-            }else{
-                Toast.makeText(this,"No Server yet found",Toast.LENGTH_LONG).show();
-            }
-
-        }
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -243,6 +226,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     public static class MeanPreferenceFragment extends PreferenceFragment {
         public static final String MEAN_MODE = "meanMode";
+        public static final String BROKER_IP = "brokerIp";
 
         @Override
         public void onCreate(Bundle savedInstanceState) {
@@ -253,6 +237,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             // Bind the summaries of EditText/List/Dialog/Ringtone preferences to their values. When their values change, their summaries are
             // updated to reflect the new value, per the Android Design guidelines.
             bindPreferenceSummaryToValue(findPreference(MEAN_MODE));
+            bindPreferenceSummaryToValue(findPreference(BROKER_IP));
         }
 
         @Override

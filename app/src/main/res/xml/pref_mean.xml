@@ -8,5 +8,12 @@
         android:key="meanMode"
         android:title="@string/pref_title_mean_mode" />
 
+    <EditTextPreference
+        android:inputType="text"
+        android:key="brokerIp"
+        android:maxLines="1"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:title="@string/pref_title_intent_broker" />
 
 </PreferenceScreen>

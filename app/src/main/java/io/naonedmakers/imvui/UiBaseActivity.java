@@ -1,42 +1,39 @@
 package io.naonedmakers.imvui;
 
 import android.Manifest;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothHeadset;
+import android.bluetooth.BluetoothProfile;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.os.AsyncTask;
+import android.graphics.PorterDuff;
+import android.media.AudioManager;
+import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
 import android.text.Spanned;
 import android.util.Log;
-import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ProgressBar;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.Toast;
 
-import java.net.ConnectException;
-import java.net.Inet4Address;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.InterfaceAddress;
-import java.net.NetworkInterface;
-import java.net.Socket;
-import java.util.Collections;
 import java.util.List;
-
-import ai.api.AIServiceException;
-import ai.api.util.StringUtils;
-import io.naonedmakers.imvui.meaning.MeanResponse;
 
 public class UiBaseActivity extends AppCompatActivity {
     private static final String TAG = UiBaseActivity.class.getSimpleName();
@@ -47,8 +44,11 @@ public class UiBaseActivity extends AppCompatActivity {
     private ScrollView logView;
     //TODO change with https://github.com/zagum/SpeechRecognitionView
     private ProgressBar soundLevel;
-
+    private Menu menu;
+    private boolean headSetStatus = false;
+    private boolean mqttStatus = false;
     private static final int REQUEST_AUDIO_PERMISSIONS_ID = 33;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,6 +66,9 @@ public class UiBaseActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_home, menu);
+        this.menu = menu;
+        displayBTHeadSetStatus();
+        displayMqtttStatus();
         return true;
     }
 
@@ -80,6 +83,22 @@ public class UiBaseActivity extends AppCompatActivity {
         if (id == R.id.action_settings) {
             Intent intent = new Intent(this, SettingsActivity.class);
             startActivity(intent);
+            return true;
+        }else if (id == R.id.action_admin) {
+            SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+            String lastBrokerIp = sharedPref.getString(SettingsActivity.MeanPreferenceFragment.BROKER_IP,null);
+            if(lastBrokerIp!=null){
+                Toast.makeText(this,"Opening Web admin",Toast.LENGTH_LONG).show();
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://"+lastBrokerIp+":8080/admin"));
+                startActivity(browserIntent);
+            }else{
+                Toast.makeText(this,"No Server yet found",Toast.LENGTH_LONG).show();
+            }
+            return true;
+        }else if (id == R.id.action_mqtt) {
+            //findAndConnectToLanMqttBroker() {
+            return true;
+        }else if (id == R.id.action_headset) {
             return true;
         }
 
@@ -167,101 +186,227 @@ public class UiBaseActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        findLanMqttBrokerIp();
+        initBT();
+        //initMediaSession();
+        //successfullyRetrievedAudioFocus();
         strLog="";
     }
 
-    /**
-     * Find in the local network an host that has mqtt port open
-     * @return
-     */
-    public void findLanMqttBrokerIp() {
 
-        SharedPreferences sharedPref = this.getSharedPreferences(getString(R.string.pref_file),Context.MODE_PRIVATE);
-        String lastBrokerIp = sharedPref.getString(getString(R.string.broker_ip),null);
 
-        new AsyncTask<String, Void, String>() {
+    public void setMqttStatus(boolean connected) {
+        mqttStatus = connected;
+        displayMqtttStatus();
+    }
+    public void displayMqtttStatus(){
+        if(menu!=null) {
+            int colorId = 0;
+            if (mqttStatus) {
+                colorId = getResources().getColor(R.color.colorConnected);
+            } else {
+                colorId = getResources().getColor(R.color.colorAccent);
+            }
+            menu.findItem(R.id.action_mqtt).getIcon().mutate();
+            menu.findItem(R.id.action_mqtt).getIcon().setColorFilter(colorId, PorterDuff.Mode.SRC_ATOP);
+            menu.findItem(R.id.action_admin).getIcon().mutate();
+            menu.findItem(R.id.action_admin).getIcon().setColorFilter(colorId, PorterDuff.Mode.SRC_ATOP);
+        }
+    }
+
+
+    /*******************************************************************************************
+     * ******************************************************************************************
+     *                                   BLUETOOTH
+     * ******************************************************************************************
+     *******************************************************************************************/
+    public void setBTHeadSetStatus(boolean connected) {
+        headSetStatus = connected;
+        displayBTHeadSetStatus();
+    }
+    public void displayBTHeadSetStatus(){
+        //at startup the menu is not present
+        if(menu!=null) {
+            int colorId = 0;
+            if (headSetStatus) {
+                colorId = getResources().getColor(R.color.colorConnected);
+            } else {
+                colorId = getResources().getColor(R.color.colorAccent);
+            }
+            menu.findItem(R.id.action_headset).getIcon().mutate();
+            menu.findItem(R.id.action_headset).getIcon().setColorFilter(colorId, PorterDuff.Mode.SRC_ATOP);
+        }
+    }
+
+
+    MediaSessionCompat mediaSession;
+    private void initMediaSession() {
+
+
+/**
+        BroadcastReceiver remoteReceiver = new MediaButtonReceiver(){
             @Override
-            protected String doInBackground(String ... params) {
-                String brokerIp=params[0];
-                try {
-                    if(brokerIp!=null && !StringUtils.isEmpty(brokerIp)) {
-                        //test the last Ip first
-                        if(isPortOpen(brokerIp,1883,100)){
-                            return brokerIp;
-                        }
-                    }
-                    List<NetworkInterface> all = Collections.list(NetworkInterface.getNetworkInterfaces());
-                    for (NetworkInterface nif : all) {
-                        if (!nif.getName().equalsIgnoreCase("wlan0")) continue;
-                        if (!nif.isUp()) continue;
-                        for (InterfaceAddress intAddress : nif.getInterfaceAddresses()) {
-                            if (intAddress.getAddress() instanceof Inet4Address) {
-                                //found the wifi ipv4 adress
-                                Log.i(TAG, "wifi ipv4 address: " +intAddress);
-                                Log.i(TAG, "wifi ipv4 getBroadcast: " +intAddress.getBroadcast());
-                                Log.i(TAG, "wifi ipv4 getNetworkPrefixLength: " +intAddress.getNetworkPrefixLength());
-                                if(intAddress.getNetworkPrefixLength()<=24){
-                                    //not test more than 256 ip
-                                    byte[] currentIp = intAddress.getBroadcast().getAddress();
-                                    Log.i(TAG, "wifi ipv4 bytes: " +currentIp.length);
-                                    for(int i=1;i<256;i++){
-                                        currentIp[3]=((Integer)i).byteValue();
-                                        InetAddress addr = InetAddress.getByAddress(currentIp);
-                                        if(addr.isReachable(40)){
-                                            Log.i(TAG, "address isReachable: " +addr.getHostAddress());
-                                            if(isPortOpen(addr.getHostAddress(),1883,100)){
-                                                return addr.getHostAddress();
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
+            public void onReceive(Context context, Intent intent) {
+                if (Intent.ACTION_MEDIA_BUTTON.equals(intent.getAction())) {
+                    final KeyEvent event = intent.getParcelableExtra(Intent.EXTRA_KEY_EVENT);
+                    Log.i(TAG, "onMediaButtonRecevier "+ event.getAction());
+                }else if (Intent.ACTION_VOICE_COMMAND.equals(intent.getAction())) {
+                    Log.i(TAG, "onMediaButtonRecevier ACTION_VOICE_COMMAND");
+                }else{
+                    Log.i(TAG, "onMediaButtonRecevier"+intent.getAction());
+                };
+                abortBroadcast();
+            }
+        };
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(Intent.ACTION_MEDIA_BUTTON);
+        filter.addAction(Intent.ACTION_VOICE_COMMAND);
+        filter.setPriority(999);
+        if(mediaSession!=null) {
+            this.unregisterReceiver(remoteReceiver);
+        }
+        this.registerReceiver(remoteReceiver,filter);
+*/
+
+        //ComponentName mediaButtonReceiver = new ComponentName(getApplicationContext(), MediaButtonReceiver.class);
+        mediaSession = new MediaSessionCompat(this.getApplicationContext(), TAG);
+        mediaSession.setMediaButtonReceiver(null);
+        mediaSession.setCallback(new MediaSessionCompat.Callback() {
+            @Override
+            public boolean onMediaButtonEvent(Intent mediaButtonEvent) {
+                Log.i(TAG, "onMediaButtonEvent ");
+                return super.onMediaButtonEvent(mediaButtonEvent);
+            }
+        });
+        mediaSession.setFlags(MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS | MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS);
+        mediaSession.setActive(true);
+    }
 
 
-                    }
-                } catch (Exception ex) {
-                    //handle exception
+    BluetoothHeadset mBluetoothHeadset;
+
+    private void initBT(){
+        BluetoothAdapter mBluetoothAdapter;
+
+        // Get the default adapter
+        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+
+        if (!mBluetoothAdapter.isEnabled()) {
+            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            startActivityForResult(enableBtIntent, 0);
+        }
+
+        BluetoothProfile.ServiceListener mProfileListener = new BluetoothProfile.ServiceListener() {
+            public void onServiceConnected(int profile, BluetoothProfile proxy) {
+                if (profile == BluetoothProfile.HEADSET) {
+                    Log.d(TAG, "Connecting HeadsetService...");
+                    mBluetoothHeadset = (BluetoothHeadset) proxy;
+                    List<BluetoothDevice> devices = mBluetoothHeadset.getConnectedDevices();
+                    Log.d(TAG, "HeadsetService..."+devices.size());
+                    setBTHeadSetStatus((devices.size()>0));
                 }
-                return null;
             }
+            public void onServiceDisconnected(int profile) {
+                if (profile == BluetoothProfile.HEADSET) {
+                    Log.d(TAG, "Unexpected Disconnect of HeadsetService...");
+                    mBluetoothHeadset = null;
+                    setBTHeadSetStatus(false);
+                }
+            }
+        };
+        // Establish connection to the proxy.
+        mBluetoothAdapter.getProfileProxy(this, mProfileListener, BluetoothProfile.HEADSET);
 
+
+        //Monitor profile events
+        IntentFilter filter = new IntentFilter();
+        //filter.addAction(BluetoothHeadset.ACTION_AUDIO_STATE_CHANGED);
+        filter.addAction(BluetoothHeadset.ACTION_CONNECTION_STATE_CHANGED);
+        if(mProfileReceiver!=null) {
+            try {
+                unregisterReceiver(mProfileReceiver);
+            }catch (Exception e){//DO NOTING
+                 }
+            registerReceiver(mProfileReceiver, filter);
+        }
+
+
+    }
+
+    private boolean successfullyRetrievedAudioFocus() {
+        AudioManager audioManager = (AudioManager) this.getApplicationContext().getSystemService(Context.AUDIO_SERVICE);
+        int result = audioManager.requestAudioFocus(new AudioManager.OnAudioFocusChangeListener() {
             @Override
-            protected void onPostExecute(String brokerIp) {
-                storeBrokerIp(brokerIp);
+            public void onAudioFocusChange(int i) {
+                Log.i(TAG, "onAudioFocusChange " + (AudioManager.AUDIOFOCUS_GAIN == i));
             }
-        }.execute(lastBrokerIp);
+        }, AudioManager.STREAM_VOICE_CALL, AudioManager.AUDIOFOCUS_GAIN);
+
+        return result == AudioManager.AUDIOFOCUS_GAIN;
     }
 
-    public void storeBrokerIp(String brokerIp){
-        if(brokerIp!=null && !StringUtils.isEmpty(brokerIp)) {
-            Log.i(TAG, "new Broker Ip: " +brokerIp);
-            SharedPreferences sharedPref = this.getSharedPreferences(getString(R.string.pref_file),Context.MODE_PRIVATE);
-            SharedPreferences.Editor editor = sharedPref.edit();
-            editor.putString(getString(R.string.broker_ip), brokerIp);
-            editor.commit();
-        }else{
-            Log.i(TAG, "no Broker Found");
-        }
-    }
-    public static boolean isPortOpen(final String ip, final int port, final int timeout) {
 
-        try {
-            Socket socket = new Socket();
-            socket.connect(new InetSocketAddress(ip, port), timeout);
-            socket.close();
-            return true;
-        }
 
-        catch(ConnectException ce){
-            //Log.i(TAG, "isPortOpen"+ce.getMessage());
-            return false;
+    private BroadcastReceiver mProfileReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            final String action = intent.getAction();
+            mBluetoothHeadset = null;
+            //if (BluetoothHeadset.ACTION_AUDIO_STATE_CHANGED.equals(action)) {
+            //    notifyAudioState(intent);
+            //}
+            if (BluetoothHeadset.ACTION_CONNECTION_STATE_CHANGED.equals(action)) {
+                notifyConnectState(intent);
+            }
         }
+    };
+/*
+    private void notifyAudioState(Intent intent) {
+        final int state = intent.getIntExtra(BluetoothHeadset.EXTRA_STATE, -1);
+        String message;
+        switch (state) {
+            case BluetoothHeadset.STATE_AUDIO_CONNECTED:
+                message = "Audio Connected";
+                this.setBTHeadSetStatus(true);
+                break;
+            case BluetoothHeadset.STATE_AUDIO_CONNECTING:
+                message = "Audio Connecting";
+                break;
+            case BluetoothHeadset.STATE_AUDIO_DISCONNECTED:
+                message = "Audio Disconnected";
+                this.setBTHeadSetStatus(false);
+                break;
+            default:
+                message = "Audio Unknown";
+                break;
+        }
+        Log.d(TAG, " HeadsetnotifyAudioState..."+message);
+        //Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
 
-        catch (Exception ex) {
-            Log.i(TAG, "isPortOpen"+ex.getMessage());
-            return false;
+    }*/
+
+    private void notifyConnectState(Intent intent) {
+        final int state = intent.getIntExtra(BluetoothHeadset.EXTRA_STATE, -1);
+        String message;
+        switch (state) {
+            case BluetoothHeadset.STATE_CONNECTED:
+                message = "Connected";
+                this.setBTHeadSetStatus(true);
+                break;
+            case BluetoothHeadset.STATE_CONNECTING:
+                message = "Connecting";
+                break;
+            case BluetoothHeadset.STATE_DISCONNECTING:
+                message = "Disconnecting";
+                break;
+            case BluetoothHeadset.STATE_DISCONNECTED:
+                message = "Disconnected";
+                this.setBTHeadSetStatus(false);
+                break;
+            default:
+                message = "Connect Unknown";
+                break;
         }
+        Log.d(TAG, " HeadsetnotifyConnectState..."+message);
+        //Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 }

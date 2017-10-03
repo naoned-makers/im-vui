@@ -18,14 +18,4 @@
         android:fragment="io.naonedmakers.imvui.SettingsActivity$SynthesisPreferenceFragment"
         android:icon="@android:drawable/ic_lock_silent_mode_off"
         android:title="@string/pref_header_synth" />
-
-    <header
-        android:icon="@android:drawable/ic_menu_set_as"
-        android:title="@string/pref_header_admin"
-        android:id="@+id/launch_admin">
-    </header>
-
-    <!--intent android:targetPackage="com.mycompany.myapp"
-        android:targetClass="com.mycompany.myapp.ui.MyPreferenceActivity" /-->
-
 </preference-headers>
