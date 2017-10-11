@@ -163,7 +163,7 @@ public class ConversationActivity extends HotWordActivity {
 
     public void onListeningError(String errorText) {
         super.onListeningError(errorText);
-        this.publish("im/command/chat/listenerror", "{\"origin':\"im-vui\"}");
+        this.publish("im/command/chat/listenerror", "{\"origin\":\"im-vui\"}");
     }
 
     /**

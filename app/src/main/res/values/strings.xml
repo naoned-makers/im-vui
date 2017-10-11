@@ -15,6 +15,9 @@
     <string-array name="snowboy_model_entries">
         <item>david_jarvis.pmdl</item>
         <item>vince_jarvis.pmdl</item>
+        <item>alexa.umdl</item>
+        <item>smart_mirror.umdl</item>
+        <item>snowboy.umdl</item>
     </string-array>
     <string name="pref_title_hotword_on">Activated</string>
 
