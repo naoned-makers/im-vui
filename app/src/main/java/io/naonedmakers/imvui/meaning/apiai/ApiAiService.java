@@ -31,7 +31,7 @@ public class ApiAiService extends AIDataService implements MeanService {
         meanResponse.speech=aiResponse.getResult().getFulfillment().getSpeech();
         meanResponse.intentName=aiResponse.getResult().getMetadata().getIntentName();
         meanResponse.parameters=aiResponse.getResult().getParameters();
-
+        meanResponse.statusCode =0;
         return meanResponse;
     }
 

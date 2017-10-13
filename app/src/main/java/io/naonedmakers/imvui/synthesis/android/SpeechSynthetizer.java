@@ -36,7 +36,6 @@ public class SpeechSynthetizer extends UtteranceProgressListener implements Text
         audioManager.adjustStreamVolume(AudioManager.STREAM_NOTIFICATION ,AudioManager.ADJUST_MUTE, 0);
         audioManager.adjustStreamVolume(AudioManager.STREAM_VOICE_CALL ,AudioManager.ADJUST_MUTE, 0);
         audioManager.adjustStreamVolume(AudioManager.STREAM_RING ,AudioManager.ADJUST_MUTE, 0);
-        audioManager.adjustStreamVolume(AudioManager.STREAM_ACCESSIBILITY ,AudioManager.ADJUST_MUTE, 0);
 
 
         amStreamVoiceCallMaxVol = audioManager.getStreamMaxVolume(AudioManager.STREAM_VOICE_CALL);
