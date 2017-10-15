@@ -84,6 +84,7 @@ public class ConversationActivity extends HotWordActivity {
             //APIAI_ACESS_TOKEN system env must be set in android studio startup script
             final AIConfiguration config = new AIConfiguration(BuildConfig.APIAI_ACESS_TOKEN);
             meanService = (MeanService) new ApiAiService(config);
+            findAndConnectToLanMqttBroker();
         } else {
             meanService = new LocalAiService();
             findAndConnectToLanMqttBroker();
@@ -284,7 +285,7 @@ public class ConversationActivity extends HotWordActivity {
                     if(brokerIp!=null && !StringUtils.isEmpty(brokerIp)) {
                         //test the last Ip first
                         if(isPortOpen(brokerIp,1883,1000)){
-                            storeAndConnectToLanMqttBroker(brokerIp);
+                            //storeAndConnectToLanMqttBroker(brokerIp);
                             return brokerIp;
                         }
                     }
@@ -327,7 +328,7 @@ public class ConversationActivity extends HotWordActivity {
 
             @Override
             protected void onPostExecute(String brokerIp) {
-                //storeAndConnectToLanMqttBroker(brokerIp);
+                storeAndConnectToLanMqttBroker(brokerIp);
             }
         }.execute(lastBrokerIp);
     }
@@ -353,7 +354,7 @@ public class ConversationActivity extends HotWordActivity {
      * @throws IllegalArgumentException If config parameter is null
      */
     public void mqttConnect(String lastBrokerIp) {
-        Log.d(TAG, "LocalAiService " + lastBrokerIp);
+        Log.d(TAG, "Broker " + lastBrokerIp);
         String broker = "tcp://" + lastBrokerIp + ":1883";
         String clientId = "vui_" + (Math.random() * 1000000000 + "").substring(2, 8);
         try {
@@ -362,14 +363,24 @@ public class ConversationActivity extends HotWordActivity {
             sampleClient.setCallback(new MqttCallbackExtended() {
                 @Override
                 public void connectComplete(boolean reconnect, String serverURI) {
-                    Log.d(TAG, "Broker complete: " + sampleClient.getServerURI());
-                    setMqttStatus(true);
+                    Log.d(TAG, "Broker complete: " +reconnect+" "+ sampleClient.getServerURI());
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            setMqttStatus(true);
+                        }
+                    });
                 }
 
                 @Override
                 public void connectionLost(Throwable cause) {
-                    Log.d(TAG, "Broker lost");
-                    setMqttStatus(false);
+                    Log.d(TAG, "Broker lost"+cause);
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            setMqttStatus(false);
+                        }
+                    });
                 }
                 @Override
                 public void messageArrived(String topic, MqttMessage message) throws Exception {}
@@ -380,9 +391,14 @@ public class ConversationActivity extends HotWordActivity {
             MqttConnectOptions connOpts = new MqttConnectOptions();
             connOpts.setCleanSession(true);
             connOpts.setAutomaticReconnect(true);
-            connOpts.setConnectionTimeout(1);
+            connOpts.setConnectionTimeout(2);
             Log.d(TAG, "Connecting to broker: " + sampleClient.getServerURI());
-            setMqttStatus(false);
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    setMqttStatus(false);
+                }
+            });
             sampleClient.connect(connOpts);
 
         } catch (MqttException me) {

@@ -15,16 +15,22 @@
         android:icon="@drawable/ic_action_headset"
         app:showAsAction="always" />
     <item
+        android:id="@+id/action_touch"
+        android:orderInCategory="40"
+        android:title="@string/action_touch"
+        android:icon="@drawable/ic_touch"
+        app:showAsAction="always" />
+    <item
         android:id="@+id/action_admin"
         android:orderInCategory="50"
         android:title="@string/action_admin"
-        android:icon="@android:drawable/ic_menu_set_as"
+        android:icon="@drawable/ic_admin"
         app:showAsAction="always" />
     <item
         android:id="@+id/action_settings"
         android:orderInCategory="100"
         android:title="@string/action_settings"
-        android:icon="@android:drawable/ic_menu_preferences"
+        android:icon="@drawable/ic_pref"
         app:showAsAction="always"  />
 
 </menu>

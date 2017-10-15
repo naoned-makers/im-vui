@@ -84,21 +84,25 @@ public class UiBaseActivity extends AppCompatActivity {
             Intent intent = new Intent(this, SettingsActivity.class);
             startActivity(intent);
             return true;
-        }else if (id == R.id.action_admin) {
+        } else if (id == R.id.action_admin) {
             SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
-            String lastBrokerIp = sharedPref.getString(SettingsActivity.MeanPreferenceFragment.BROKER_IP,null);
-            if(lastBrokerIp!=null){
-                Toast.makeText(this,"Opening Web admin",Toast.LENGTH_LONG).show();
-                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://"+lastBrokerIp+":8080/admin"));
+            String lastBrokerIp = sharedPref.getString(SettingsActivity.MeanPreferenceFragment.BROKER_IP, null);
+            if (lastBrokerIp != null) {
+                Toast.makeText(this, "Opening Web admin", Toast.LENGTH_LONG).show();
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://" + lastBrokerIp + ":8081/"));
                 startActivity(browserIntent);
-            }else{
-                Toast.makeText(this,"No Server yet found",Toast.LENGTH_LONG).show();
+            } else {
+                Toast.makeText(this, "No Server yet found", Toast.LENGTH_LONG).show();
             }
             return true;
-        }else if (id == R.id.action_mqtt) {
+        } else if (id == R.id.action_touch) {
+            Intent intent = new Intent(this, WebTouchActivity.class);
+            startActivity(intent);
+            return true;
+        } else if (id == R.id.action_mqtt) {
             //findAndConnectToLanMqttBroker() {
             return true;
-        }else if (id == R.id.action_headset) {
+        } else if (id == R.id.action_headset) {
             return true;
         }
 
@@ -134,6 +138,7 @@ public class UiBaseActivity extends AppCompatActivity {
             }
         });
     }
+
     public void updateSoundLevel(final int level) {
         soundLevel.post(new Runnable() {
             @Override
@@ -155,11 +160,11 @@ public class UiBaseActivity extends AppCompatActivity {
     }
 
     protected boolean checkAudioRecordPermission() {
-        if (ContextCompat.checkSelfPermission(this,Manifest.permission.RECORD_AUDIO)!= PackageManager.PERMISSION_GRANTED) {
-                // No explanation needed, we can request the permission.
-                ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.RECORD_AUDIO},REQUEST_AUDIO_PERMISSIONS_ID);
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            // No explanation needed, we can request the permission.
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO}, REQUEST_AUDIO_PERMISSIONS_ID);
             return false;
-        }else{
+        } else {
             return true;
         }
     }
@@ -189,17 +194,17 @@ public class UiBaseActivity extends AppCompatActivity {
         initBT();
         //initMediaSession();
         //successfullyRetrievedAudioFocus();
-        strLog="";
+        strLog = "";
     }
-
 
 
     public void setMqttStatus(boolean connected) {
         mqttStatus = connected;
         displayMqtttStatus();
     }
-    public void displayMqtttStatus(){
-        if(menu!=null) {
+
+    public void displayMqtttStatus() {
+        if (menu != null) {
             int colorId = 0;
             if (mqttStatus) {
                 colorId = getResources().getColor(R.color.colorConnected);
@@ -223,9 +228,10 @@ public class UiBaseActivity extends AppCompatActivity {
         headSetStatus = connected;
         displayBTHeadSetStatus();
     }
-    public void displayBTHeadSetStatus(){
+
+    public void displayBTHeadSetStatus() {
         //at startup the menu is not present
-        if(menu!=null) {
+        if (menu != null) {
             int colorId = 0;
             if (headSetStatus) {
                 colorId = getResources().getColor(R.color.colorConnected);
@@ -239,33 +245,33 @@ public class UiBaseActivity extends AppCompatActivity {
 
 
     MediaSessionCompat mediaSession;
+
     private void initMediaSession() {
 
 
 /**
-        BroadcastReceiver remoteReceiver = new MediaButtonReceiver(){
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                if (Intent.ACTION_MEDIA_BUTTON.equals(intent.getAction())) {
-                    final KeyEvent event = intent.getParcelableExtra(Intent.EXTRA_KEY_EVENT);
-                    Log.i(TAG, "onMediaButtonRecevier "+ event.getAction());
-                }else if (Intent.ACTION_VOICE_COMMAND.equals(intent.getAction())) {
-                    Log.i(TAG, "onMediaButtonRecevier ACTION_VOICE_COMMAND");
-                }else{
-                    Log.i(TAG, "onMediaButtonRecevier"+intent.getAction());
-                };
-                abortBroadcast();
-            }
-        };
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(Intent.ACTION_MEDIA_BUTTON);
-        filter.addAction(Intent.ACTION_VOICE_COMMAND);
-        filter.setPriority(999);
-        if(mediaSession!=null) {
-            this.unregisterReceiver(remoteReceiver);
-        }
-        this.registerReceiver(remoteReceiver,filter);
-*/
+ BroadcastReceiver remoteReceiver = new MediaButtonReceiver(){
+@Override public void onReceive(Context context, Intent intent) {
+if (Intent.ACTION_MEDIA_BUTTON.equals(intent.getAction())) {
+final KeyEvent event = intent.getParcelableExtra(Intent.EXTRA_KEY_EVENT);
+Log.i(TAG, "onMediaButtonRecevier "+ event.getAction());
+}else if (Intent.ACTION_VOICE_COMMAND.equals(intent.getAction())) {
+Log.i(TAG, "onMediaButtonRecevier ACTION_VOICE_COMMAND");
+}else{
+Log.i(TAG, "onMediaButtonRecevier"+intent.getAction());
+};
+abortBroadcast();
+}
+};
+ IntentFilter filter = new IntentFilter();
+ filter.addAction(Intent.ACTION_MEDIA_BUTTON);
+ filter.addAction(Intent.ACTION_VOICE_COMMAND);
+ filter.setPriority(999);
+ if(mediaSession!=null) {
+ this.unregisterReceiver(remoteReceiver);
+ }
+ this.registerReceiver(remoteReceiver,filter);
+ */
 
         //ComponentName mediaButtonReceiver = new ComponentName(getApplicationContext(), MediaButtonReceiver.class);
         mediaSession = new MediaSessionCompat(this.getApplicationContext(), TAG);
@@ -284,7 +290,7 @@ public class UiBaseActivity extends AppCompatActivity {
 
     BluetoothHeadset mBluetoothHeadset;
 
-    private void initBT(){
+    private void initBT() {
         BluetoothAdapter mBluetoothAdapter;
 
         // Get the default adapter
@@ -301,10 +307,11 @@ public class UiBaseActivity extends AppCompatActivity {
                     Log.d(TAG, "Connecting HeadsetService...");
                     mBluetoothHeadset = (BluetoothHeadset) proxy;
                     List<BluetoothDevice> devices = mBluetoothHeadset.getConnectedDevices();
-                    Log.d(TAG, "HeadsetService..."+devices.size());
-                    setBTHeadSetStatus((devices.size()>0));
+                    Log.d(TAG, "HeadsetService..." + devices.size());
+                    setBTHeadSetStatus((devices.size() > 0));
                 }
             }
+
             public void onServiceDisconnected(int profile) {
                 if (profile == BluetoothProfile.HEADSET) {
                     Log.d(TAG, "Unexpected Disconnect of HeadsetService...");
@@ -321,12 +328,15 @@ public class UiBaseActivity extends AppCompatActivity {
         IntentFilter filter = new IntentFilter();
         //filter.addAction(BluetoothHeadset.ACTION_AUDIO_STATE_CHANGED);
         filter.addAction(BluetoothHeadset.ACTION_CONNECTION_STATE_CHANGED);
-        if(mProfileReceiver!=null) {
+        if (mProfileReceiver != null) {
             try {
                 unregisterReceiver(mProfileReceiver);
-            }catch (Exception e){//DO NOTING
-                 }
-            registerReceiver(mProfileReceiver, filter);
+            } catch (Exception e) {//DO NOTING
+            }
+            try {
+                registerReceiver(mProfileReceiver, filter);
+            } catch (Exception e) {//DO NOTING
+            }
         }
 
 
@@ -343,7 +353,6 @@ public class UiBaseActivity extends AppCompatActivity {
 
         return result == AudioManager.AUDIOFOCUS_GAIN;
     }
-
 
 
     private BroadcastReceiver mProfileReceiver = new BroadcastReceiver() {
@@ -406,7 +415,7 @@ public class UiBaseActivity extends AppCompatActivity {
                 message = "Connect Unknown";
                 break;
         }
-        Log.d(TAG, " HeadsetnotifyConnectState..."+message);
+        Log.d(TAG, " HeadsetnotifyConnectState..." + message);
         //Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 }

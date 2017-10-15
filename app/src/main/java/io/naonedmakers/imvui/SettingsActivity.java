@@ -117,9 +117,9 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
     public boolean onMenuItemSelected(int featureId, MenuItem item) {
         int id = item.getItemId();
         if (id == android.R.id.home) {
-            if (!super.onMenuItemSelected(featureId, item)) {
+            //if (!super.onMenuItemSelected(featureId, item)) {
                 NavUtils.navigateUpFromSameTask(this);
-            }
+            //}
             return true;
         }
         return super.onMenuItemSelected(featureId, item);
@@ -151,7 +151,8 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                 || HotWordPreferenceFragment.class.getName().equals(fragmentName)
                 || RecognitionPreferenceFragment.class.getName().equals(fragmentName)
                 || MeanPreferenceFragment.class.getName().equals(fragmentName)
-                || SynthesisPreferenceFragment.class.getName().equals(fragmentName);
+                || SynthesisPreferenceFragment.class.getName().equals(fragmentName)
+                || TouchPreferenceFragment.class.getName().equals(fragmentName);
 
         //   || NotificationPreferenceFragment.class.getName().equals(fragmentName);
     }
@@ -238,6 +239,35 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             // updated to reflect the new value, per the Android Design guidelines.
             bindPreferenceSummaryToValue(findPreference(MEAN_MODE));
             bindPreferenceSummaryToValue(findPreference(BROKER_IP));
+        }
+
+        @Override
+        public boolean onOptionsItemSelected(MenuItem item) {
+            int id = item.getItemId();
+            if (id == android.R.id.home) {
+                startActivity(new Intent(getActivity(), SettingsActivity.class));
+                return true;
+            }
+            return super.onOptionsItemSelected(item);
+        }
+    }
+    /**
+     * This fragment shows Mean preferences only. It is used when the
+     * activity is showing a two-pane settings UI.
+     */
+    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
+    public static class TouchPreferenceFragment extends PreferenceFragment {
+        public static final String TOUCH_URL = "touchUrl";
+
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            addPreferencesFromResource(R.xml.pref_touch);
+            setHasOptionsMenu(true);
+
+            // Bind the summaries of EditText/List/Dialog/Ringtone preferences to their values. When their values change, their summaries are
+            // updated to reflect the new value, per the Android Design guidelines.
+            bindPreferenceSummaryToValue(findPreference(TOUCH_URL));
         }
 
         @Override

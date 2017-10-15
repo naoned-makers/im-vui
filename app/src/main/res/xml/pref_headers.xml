@@ -18,4 +18,8 @@
         android:fragment="io.naonedmakers.imvui.SettingsActivity$SynthesisPreferenceFragment"
         android:icon="@android:drawable/ic_lock_silent_mode_off"
         android:title="@string/pref_header_synth" />
+    <header
+        android:fragment="io.naonedmakers.imvui.SettingsActivity$TouchPreferenceFragment"
+        android:icon="@drawable/ic_touch"
+        android:title="@string/pref_header_touch" />
 </preference-headers>

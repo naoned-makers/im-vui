@@ -1,25 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="io.naonedmakers.imvui">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="io.naonedmakers.imvui">
 
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
-    <uses-permission android:name="android.permission.BLUETOOTH"/>
-    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme">
+        android:theme="@style/AppTheme"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round">
         <activity
             android:name=".ConversationActivity"
             android:label="@string/app_name"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/AppTheme.NoActionBar"
+            android:icon="@mipmap/ic_launcher"
+            android:roundIcon="@mipmap/ic_launcher_round">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
@@ -27,7 +31,9 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="http" />
                 <data android:scheme="https" />
-                <data android:host="naoned-makers.github.io" android:pathPrefix="/im-vui" />
+                <data
+                    android:host="naoned-makers.github.io"
+                    android:pathPrefix="/im-vui" />
             </intent-filter>
         </activity>
         <activity
@@ -37,6 +43,20 @@
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="io.naonedmakers.imvui.ConversationActivity" />
+        </activity>
+        <activity
+            android:name=".WebTouchActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:label="@string/title_activity_web_touch"
+            android:screenOrientation="portrait"
+            android:icon="@mipmap/ic_launcher_touch"
+            android:roundIcon="@mipmap/ic_launcher_touch_round"
+            android:theme="@style/FullscreenTheme"
+            android:taskAffinity="io.naonedmakers.imvui.WebTouchActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
         </activity>
     </application>
 

@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">im voice ui</string>
+    <string name="app_name">im voice</string>
 
 
     <string name="action_settings">Settings</string>
@@ -60,7 +60,14 @@
     </string-array>
 
 
+    <string name="action_touch">Web touch</string>
+    <string name="pref_header_touch">Web touch</string>
+    <string name="pref_title_intent_touch">Touch url</string>
+    <string name="pref_default_touch_url">http://naonedmakers:8080</string>
+
     <string name="action_admin">Admin</string>
     <string name="action_mqtt">Mqtt</string>
     <string name="action_headset">Headset</string>
+
+    <string name="title_activity_web_touch">im touch</string>
 </resources>
