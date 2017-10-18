@@ -37,9 +37,9 @@ public class LocalAiService implements MeanService {
             meanResponse.action = "head/move";
             meanResponse.speech = "ok je bouge la tête";
             meanResponse.intentName = "headmove";
-        } else if (stringRequest.contains("casque") | stringRequest.contains("êtes")) {
+        } else if (stringRequest.contains("casque") | stringRequest.contains("visière")) {
             meanResponse.action = "helmet/move";
-            meanResponse.speech = "ok je bouge la tête";
+            meanResponse.speech = "ok je bouge mon casque";
             meanResponse.intentName = "helmetmove";
         }
         else if (stringRequest.contains("bras") | stringRequest.contains("quoi") | stringRequest.contains("lebrun")) {

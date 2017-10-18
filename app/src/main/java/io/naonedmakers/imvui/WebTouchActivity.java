@@ -7,10 +7,15 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.webkit.WebResourceError;
+import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
+import android.widget.Toast;
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
@@ -128,10 +133,22 @@ public class WebTouchActivity extends AppCompatActivity {
         //findViewById(R.id.dummy_button).setOnTouchListener(mDelayHideTouchListener);
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
         String lastWebTouchUrl = sharedPref.getString(SettingsActivity.TouchPreferenceFragment.TOUCH_URL,null);
+        String lastBrokerIp = sharedPref.getString(SettingsActivity.MeanPreferenceFragment.BROKER_IP,null);
         mWebView.setWebContentsDebuggingEnabled(true);
         WebSettings webSettings = mWebView.getSettings();
         webSettings.setJavaScriptEnabled(true);
-        mWebView.loadUrl(lastWebTouchUrl);
+        mWebView.setWebViewClient(new WebViewClient() {
+            @Override
+            public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
+                super.onReceivedError(view, request, error);
+                Toast.makeText(view.getContext(),""+error.getDescription(),Toast.LENGTH_LONG).show();
+            }
+        });
+        Log.i("WebView","LAUNCH"+lastWebTouchUrl);
+        if(lastWebTouchUrl!=null){
+            lastWebTouchUrl.replace("lastBrokerIp",lastBrokerIp);
+        }
+        mWebView.loadUrl(lastWebTouchUrl);//  "file:///android_asset/touch/index.html?mqttServer=lastBrokerIp
     }
 
     @Override
