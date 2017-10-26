@@ -18,6 +18,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
+import android.support.transition.TransitionManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.media.session.MediaSessionCompat;
@@ -25,6 +26,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
 import android.text.Spanned;
+import android.transition.Fade;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -33,12 +35,13 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
-public class UiBaseActivity extends AppCompatActivity {
+public class UiBaseActivity extends MqttActivity {
     private static final String TAG = UiBaseActivity.class.getSimpleName();
 
-    static String strLog = null;
     private TextView log;
     protected FloatingActionButton fab;
     private ScrollView logView;
@@ -46,7 +49,6 @@ public class UiBaseActivity extends AppCompatActivity {
     private ProgressBar soundLevel;
     private Menu menu;
     private boolean headSetStatus = false;
-    private boolean mqttStatus = false;
     private static final int REQUEST_AUDIO_PERMISSIONS_ID = 33;
 
 
@@ -95,8 +97,12 @@ public class UiBaseActivity extends AppCompatActivity {
                 Toast.makeText(this, "No Server yet found", Toast.LENGTH_LONG).show();
             }
             return true;
-        } else if (id == R.id.action_touch) {
+        } else if (id == R.id.action_web_touch) {
             Intent intent = new Intent(this, WebTouchActivity.class);
+            startActivity(intent);
+            return true;
+        } else if (id == R.id.action_touch) {
+            Intent intent = new Intent(this, TouchActivity.class);
             startActivity(intent);
             return true;
         } else if (id == R.id.action_mqtt) {
@@ -113,22 +119,64 @@ public class UiBaseActivity extends AppCompatActivity {
     //##############################################################
 
 
-    static int MAX_LOG_LINE_NUM = 200;
-    static int currLogLineNum = 0;
+    static int MAX_LOG_LINE_NUM = 14;
+    static ArrayList<String> textList = new ArrayList<String>();
+    static ArrayList<TextType> typeList = new ArrayList<TextType>();
+    static public enum TextType{
+        REQ,RES,WAIT,PAUSE,SPEAK,ERROR
+    }
 
-    public void updateLog(final String text, final String color) {
+
+    public void updateLog(final String text, final TextType textType) {
         log.post(new Runnable() {
             @Override
             public void run() {
-                if (currLogLineNum >= MAX_LOG_LINE_NUM) {
-                    int st = strLog.indexOf("<br>");
-                    strLog = strLog.substring(st + 4);
-                } else {
-                    currLogLineNum++;
+                Iterator<String> texti = textList.iterator();
+                Iterator<TextType> typei = typeList.iterator();
+                while (texti.hasNext()) {
+                    String text = texti.next(); // must be called before you can call i.remove()
+                    TextType type = typei.next();
+                    if(TextType.WAIT.equals(type) || TextType.SPEAK.equals(type)||TextType.PAUSE.equals(type)){
+                        texti.remove();
+                        typei.remove();
+                    }
                 }
-                String str = "<font color='" + color + "'>" + text + "</font>" + "<br>";
-                strLog = (strLog == null || strLog.length() == 0) ? str : strLog + str;
+                typeList.add(textType);
+                textList.add(text);
+                if(textList.size()>MAX_LOG_LINE_NUM){
+                    typeList.remove(0);
+                    textList.remove(0);
+                }
+                String strLog ="";
+                for(int i=0;i<textList.size();i++){
+
+                    String color = "black"; //typeList.get(i);
+                    if(TextType.WAIT.equals(typeList.get(i))) {
+                        color = "blue";
+                    }else   if(TextType.SPEAK.equals(typeList.get(i))) {
+                        color = "#006400";
+                    }else   if(TextType.REQ.equals(typeList.get(i))) {
+                        color = "black";
+                    }else   if(TextType.RES.equals(typeList.get(i))) {
+                        color = "#FF69B4";
+                    }else   if(TextType.PAUSE.equals(typeList.get(i))) {
+                        color = "black";
+                    }else   if(TextType.ERROR.equals(typeList.get(i))) {
+                        color = "red";
+                    }
+                    String str = "<font color='" + color + "'>" + textList.get(i) + "</font>" + "<br>";
+                    strLog = (strLog == null || strLog.length() == 0) ? str : strLog + str;
+                }
+
+
+                //Fade mFade = new Fade(Fade.IN);
+                // Start recording changes to the view hierarchy
+                //TransitionManager.beginDelayedTransition(log, mFade);
+
+
+
                 log.setText(Html.fromHtml(strLog));
+
             }
         });
         logView.post(new Runnable() {
@@ -194,22 +242,25 @@ public class UiBaseActivity extends AppCompatActivity {
         initBT();
         //initMediaSession();
         //successfullyRetrievedAudioFocus();
-        strLog = "";
+        textList.clear();
+        typeList.clear();
     }
 
 
-    public void setMqttStatus(boolean connected) {
-        mqttStatus = connected;
+    public void setMqttStatus(String connected) {
+        super.setMqttStatus(connected);
         displayMqtttStatus();
     }
 
     public void displayMqtttStatus() {
         if (menu != null) {
             int colorId = 0;
-            if (mqttStatus) {
+            if (getMqttStatusValue().equals(""+true)){
                 colorId = getResources().getColor(R.color.colorConnected);
-            } else {
+            } else if (getMqttStatusValue().equals(""+false)){
                 colorId = getResources().getColor(R.color.colorAccent);
+            } else if (getMqttStatusValue().equals("")){
+                colorId = getResources().getColor(R.color.colorWorking);
             }
             menu.findItem(R.id.action_mqtt).getIcon().mutate();
             menu.findItem(R.id.action_mqtt).getIcon().setColorFilter(colorId, PorterDuff.Mode.SRC_ATOP);

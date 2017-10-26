@@ -8,8 +8,8 @@ android {
         applicationId "io.naonedmakers.imvui"
         minSdkVersion 24
         targetSdkVersion 26
-        versionCode 5
-        versionName "5.0"
+        versionCode 6
+        versionName "6.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         buildConfigField 'String', 'APIAI_ACESS_TOKEN', "\"${System.getenv('APIAI_ACESS_TOKEN')}\""
     }
@@ -21,6 +21,7 @@ android {
         }
     }
 }
+
 
 
 dependencies {

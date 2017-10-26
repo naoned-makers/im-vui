@@ -23,6 +23,7 @@
         <TextView
             android:id="@+id/log"
             android:layout_width="fill_parent"
+            android:textSize="24sp"
             android:layout_height="wrap_content" />
     </ScrollView>
 

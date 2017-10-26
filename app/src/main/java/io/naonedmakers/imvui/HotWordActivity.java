@@ -62,9 +62,9 @@ public class HotWordActivity extends UiBaseActivity {
         Log.v(TAG, "startHotWordDetection "+hotWordActivated);
         if(hotWordActivated){
             hotWordThread.startDetecting();
-            updateLog(" ----> Waiting HotWord", "blue");
+            updateLog("     Waiting HotWord", TextType.WAIT);
         }else{
-            updateLog(" ----> Waiting icon touch", "blue");
+            updateLog("     Waiting icon touch", TextType.WAIT);
         }
         fab.setImageDrawable(ContextCompat.getDrawable(this, android.R.drawable.ic_btn_speak_now));
         fab.setOnClickListener(new View.OnClickListener() {
@@ -85,7 +85,7 @@ public class HotWordActivity extends UiBaseActivity {
 
     protected void switchToListenning() {
         Log.v(TAG, "switchToListenning");
-        updateLog(" ----> Please Speak", "green");
+        updateLog("     Please Speak",TextType.SPEAK);
         stopHotWordDetection();
 
         speechRecognizer = new SpeechRecognizer(handle, recoMode.equals("offline_android"));//preferOffline true or false
@@ -133,7 +133,7 @@ public class HotWordActivity extends UiBaseActivity {
             hotWordThread.cleanDetecting();
             hotWordThread=null;
         }
-        updateLog(" ----> Pause", "black");
+        updateLog(" ----> Pause",TextType.PAUSE);
         super.onPause();
     }
 
@@ -183,7 +183,7 @@ public class HotWordActivity extends UiBaseActivity {
                     updateSoundLevel((int) msg.obj);
                     break;
                 case MSG_HOT_ERROR:
-                    updateLog(" ----> " + msg.toString(), "red");
+                    updateLog(" ----> " + msg.toString(),TextType.ERROR);
                     stopHotWordDetection();
                     break;
                 //######################
@@ -210,13 +210,13 @@ public class HotWordActivity extends UiBaseActivity {
      * Event fires when recognition engine finish listening
      */
     public void onListeningFinished(String queryText) {
-        updateLog(queryText, "black");
+        updateLog(queryText,TextType.REQ);
     }
     /**
      * Event fires when recognition engine error
      */
     public void onListeningError(String errorText) {
-        updateLog(errorText, "red");
+        updateLog(errorText,TextType.ERROR);
         switchToHotWordDetection();
     }
 

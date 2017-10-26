@@ -60,7 +60,7 @@
     </string-array>
 
 
-    <string name="action_touch">Web touch</string>
+    <string name="action_web_touch">Web touch</string>
     <string name="pref_header_touch">Web touch</string>
     <string name="pref_title_intent_touch">Touch url</string>
     <string name="pref_default_touch_url">http://naonedmakers:8080</string>
@@ -69,5 +69,7 @@
     <string name="action_mqtt">Mqtt</string>
     <string name="action_headset">Headset</string>
 
-    <string name="title_activity_web_touch">im touch</string>
+    <string name="action_touch">Move touch</string>
+    <string name="title_activity_web_touch">im web touch</string>
+    <string name="title_activity_touch">im touch</string>
 </resources>
